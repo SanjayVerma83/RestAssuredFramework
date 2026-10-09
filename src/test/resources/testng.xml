@@ -18,6 +18,10 @@
             <class name="tests.LoginTest"/>
             <class name="tests.ApiChainingTest"/>
             <class name="tests.GetApiTest"/>
+            <class name="tests.DataDrivenLoginTest"/>
+            <class name="tests.UpdateAccountTest"/>
+            <class name="tests.DataProviderTest"/>
+            
         </classes>
 
     </test>

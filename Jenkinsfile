@@ -4,11 +4,10 @@ pipeline {
 
     tools {
         jdk 'JDK21'
-        maven 'Maven3'
+        maven 'Maven-3.9'
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -30,23 +29,23 @@ pipeline {
 
     post {
         always {
-            // Publish standard TestNG results
+            // Publish TestNG results
             junit allowEmptyResults: true,
                   testResults: '**/target/surefire-reports/*.xml'
 
             // Publish ExtentReports HTML report
             publishHTML(target: [
                 reportName: 'ExtentReports',
-                reportDir: 'test-output',
+                reportDir: 'Reports',
                 reportFiles: 'ExtentReport.html',
                 keepAll: true,
                 alwaysLinkToLastBuild: true,
                 allowMissing: true
             ])
 
-            // Archive report files
+            // Archive test reports
             archiveArtifacts(
-                artifacts: 'test-output/**,target/surefire-reports/**',
+                artifacts: 'Reports/**,target/surefire-reports/**',
                 allowEmptyArchive: true
             )
         }
