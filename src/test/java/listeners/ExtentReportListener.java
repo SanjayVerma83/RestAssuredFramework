@@ -1,7 +1,11 @@
+
 package listeners;
+
+import java.io.File;
 
 import org.testng.ITestListener;
 import org.testng.ITestResult;
+import org.testng.ITestContext;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
@@ -10,41 +14,54 @@ import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 public class ExtentReportListener implements ITestListener {
 
     private ExtentReports extentReports;
-    private ExtentTest extentTest;
+    private ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
 
     @Override
-    public void onStart(org.testng.ITestContext context) {
+    public void onStart(ITestContext context) {
+
+        File reportDirectory = new File("Reports");
+
+        if (!reportDirectory.exists()) {
+            reportDirectory.mkdirs();
+        }
 
         ExtentSparkReporter sparkReporter =
-                new ExtentSparkReporter("Reports/ExtentReport.html");
+                new ExtentSparkReporter(
+                        new File(reportDirectory, "ExtentReport.html")
+                                .getAbsolutePath());
 
         extentReports = new ExtentReports();
-
         extentReports.attachReporter(sparkReporter);
     }
 
     @Override
     public void onTestStart(ITestResult result) {
 
-        extentTest =
-                extentReports.createTest(result.getMethod().getMethodName());
+        ExtentTest test = extentReports.createTest(
+                result.getMethod().getMethodName());
+
+        extentTest.set(test);
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
-
-        extentTest.pass("Test Passed");
+        extentTest.get().pass("Test Passed");
     }
 
     @Override
     public void onTestFailure(ITestResult result) {
-
-        extentTest.fail(result.getThrowable());
+        extentTest.get().fail(result.getThrowable());
     }
 
     @Override
-    public void onFinish(org.testng.ITestContext context) {
+    public void onTestSkipped(ITestResult result) {
+        extentTest.get().skip("Test Skipped");
+    }
 
-        extentReports.flush();
+    @Override
+    public void onFinish(ITestContext context) {
+        if (extentReports != null) {
+            extentReports.flush();
+        }
     }
 }
