@@ -1,0 +1,4 @@
+emailType,passwordType,expectedCode,expectedMessage
+VALID,VALID,200,User exists!
+INVALID,INVALID,404,User not found!
+VALID,INVALID,404,User not found!
