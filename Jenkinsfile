@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -25,23 +24,27 @@ pipeline {
         stage('Execute API Tests') {
             steps {
                 echo 'Executing API Automation Suite...'
-                bat 'mvn -q clean test -Denv=qa'
+                bat 'mvn clean test -Denv=qa'
             }
         }
     }
 
     post {
         always {
-            echo 'Publishing ExtentReports...'
+            echo 'Checking generated report...'
+            bat 'if exist Reports\\ExtentReport.html (echo Report found) else (echo Report NOT found)'
 
+            echo 'Publishing ExtentReports...'
             publishHTML(target: [
-                allowMissing: true,
+                allowMissing: false,
                 alwaysLinkToLastBuild: true,
                 keepAll: true,
                 reportDir: 'Reports',
                 reportFiles: 'ExtentReport.html',
                 reportName: 'ExtentReports'
             ])
+
+            archiveArtifacts artifacts: 'Reports/**', allowEmptyArchive: true
         }
 
         success {
