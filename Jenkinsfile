@@ -1,4 +1,4 @@
-
+```groovy
 pipeline {
     agent any
 
@@ -10,52 +10,47 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                echo 'Checking out source code from Git...'
                 checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Build & Compile') {
             steps {
-                bat 'mvn clean compile test-compile'
+                echo 'Compiling test code and validating dependencies...'
+                bat 'mvn -q compile test-compile'
             }
         }
 
-        stage('Run API Tests') {
+        stage('Execute API Tests') {
             steps {
-                bat 'mvn test'
+                echo 'Executing API Automation Suite...'
+                bat 'mvn -q clean test -Denv=qa'
             }
         }
     }
 
     post {
         always {
-            // Publish TestNG results
-            junit allowEmptyResults: true,
-                  testResults: '**/target/surefire-reports/*.xml'
+            echo 'Publishing ExtentReports...'
 
-            // Publish ExtentReports HTML report
             publishHTML(target: [
-                reportName: 'ExtentReports',
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
                 reportDir: 'Reports',
                 reportFiles: 'ExtentReport.html',
-                keepAll: true,
-                alwaysLinkToLastBuild: true,
-                allowMissing: true
+                reportName: 'ExtentReports'
             ])
-
-            // Archive test reports
-            archiveArtifacts(
-                artifacts: 'Reports/**,target/surefire-reports/**',
-                allowEmptyArchive: true
-            )
         }
 
         success {
-            echo 'API tests passed. Check ExtentReports for details.'
+            echo 'All API tests executed successfully!'
         }
 
         failure {
-            echo 'API tests failed. Check the console and ExtentReports.'
+            echo 'Pipeline failed during compilation or API test execution.'
         }
     }
 }
+```
